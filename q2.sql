@@ -15,6 +15,7 @@ CREATE TABLE q2 (
 DROP VIEW IF EXISTS numcategories CASCADE;
 DROP VIEW IF EXISTS avgrating CASCADE;
 DROP VIEW IF EXISTS cityratings CASCADE;
+DROP VIEW IF EXISTS moreCityRatings CASCADE;
 
 -- 1. Create view with hotels to num categories
 CREATE VIEW numcategories AS 
@@ -33,6 +34,12 @@ CREATE VIEW cityratings as
 SELECT city AS cityID, avg(rating) as avgCityRating
 FROM reviews NATURAL JOIN hotels
 GROUP BY city;
+
+CREATE VIEW moreCityRatings as
+SELECT city AS cityID, avg(rating) as avgCityRating
+FROM reviews NATURAL JOIN hotels
+GROUP BY city
+HAVING count(rating) > 5;
 
 -- 4. Join with 
 CREATE VIEW result AS
