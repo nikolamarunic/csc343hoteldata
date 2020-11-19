@@ -4,7 +4,7 @@ SET SEARCH_PATH TO hotelreviews;
 DROP TABLE IF EXISTS q3 cascade;
 
 CREATE TABLE q3 (
-    user TEXT NOT NULL,
+    name TEXT NOT NULL,
     numReviews INT NOT NULL,
     avgScore FLOAT NOT NULL
 );
@@ -31,6 +31,5 @@ FROM avgrating NATURAL JOIN numReviews
 JOIN users ON avgrating.userID = users.userID
 ORDER BY numReviews DESC
 ;
-
 
 insert into q3 SELECT * FROM result;
