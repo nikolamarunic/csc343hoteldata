@@ -33,6 +33,6 @@ CREATE VIEW cityinfo AS
 SELECT name AS city, numTravellers, rating FROM
 travellersPerCity JOIN ratingPerCity ON city = cityID
 JOIN cities ON city = cities.cityID
-ORDER BY rating DESC, numTravellers DESC;
+ORDER BY numTravellers DESC;
 
 insert into q1 SELECT * FROM cityinfo;
