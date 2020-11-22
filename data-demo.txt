@@ -1,0 +1,165 @@
+psql (10.14)
+WARNING: Console code page (437) differs from Windows code page (1252)
+         8-bit characters might not work correctly. See psql reference
+         page "Notes for Windows users" for details.
+Type "help" for help.
+
+postgres=# SET CLIENT_ENCODING TO 'utf8';
+SET
+postgres=# \i schema.ddl
+psql:schema.ddl:1: NOTICE:  drop cascades to 6 other objects
+DETAIL:  drop cascades to table hotelreviews.cities
+drop cascades to table hotelreviews.hotels
+drop cascades to table hotelreviews.users
+drop cascades to table hotelreviews.reviews
+drop cascades to table hotelreviews.categories
+drop cascades to table hotelreviews.hotelwebsites
+DROP SCHEMA
+CREATE SCHEMA
+SET
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+postgres=# \i import_data.sql
+COPY 1021
+COPY 1853
+COPY 6823
+COPY 9854
+COPY 9030
+COPY 2240
+postgres=# SELECT COUNT(*) FROM Cities;
+ count
+-------
+  1021
+(1 row)
+
+
+postgres=# SELECT COUNT(*) FROM Hotels;
+ count
+-------
+  1853
+(1 row)
+
+
+postgres=# SELECT COUNT(*) FROM Users;
+ count
+-------
+  6823
+(1 row)
+
+
+postgres=# SELECT COUNT(*) FROM Reviews;
+ count
+-------
+  9854
+(1 row)
+
+
+postgres=# SELECT COUNT(*) FROM Categories;
+ count
+-------
+  9030
+(1 row)
+
+
+postgres=# SELECT COUNT(*) FROM HotelWebsites;
+ count
+-------
+  2240
+(1 row)
+
+
+postgres=# SELECT * FROM Cities WHERE cityID < 10;
+ cityid |      name       | province
+--------+-----------------+----------
+      1 | Rancho Santa Fe | CA
+      2 | Hanover         | MD
+      3 | Vancouver       | WA
+      4 | Kansas City     | MO
+      5 | Huntingdon      | PA
+      6 | Perry           | GA
+      7 | San Francisco   | CA
+      8 | Vineland        | NJ
+      9 | Oxon Hill       | MD
+(9 rows)
+
+
+postgres=# SELECT * FROM Hotels WHERE city < 10;
+       hotelid        | city |                            name
+----------------------+------+------------------------------------------------------------
+ AVwc252WIN2L1WUfpqLP |    1 | Rancho Valencia Resort Spa
+ AVwdOclqIN2L1WUfti38 |    2 | Aloft Arundel Mills
+ AVwePiAX_7pvs4fzBSAl |    3 | Hampton Inn Suites PortlandVancouver
+ AVwdUKE3_7pvs4fz4lE- |    4 | Hotel Phillips
+ AVweQyWNkufWRAb5BZeg |    5 | The Inn at Solvang
+ AVweQDZpIN2L1WUf3TA9 |    6 | Econolodge
+ AVwdQ0dy_7pvs4fz4BqX |    7 | Hotel Zelos
+ AVwdKLPU_7pvs4fz23YA |    8 | EconoLodge
+ AWE7dKHFIxWefVJwyLgA |    9 | Hampton Inn Suites National HarborAlexandria Area
+ AWKoW_tYa4HuVbedPVUg |    7 | Hotel Zetta San Francisco
+ AVwdZiL7kufWRAb55fnk |    7 | The Cartwright Hotel - Union Square, BW Premier Collection
+ AVwelVZLIN2L1WUf6TpO |    7 | Wyndham Canterbury at San Francisco
+ AVwc0FWTkufWRAb5zTC1 |    7 | Halcyon Hotel
+ AVwdHZRhIN2L1WUfsXYe |    7 | InterContinental San Francisco
+ AWFAYk4e3-Khe5l_ggpw |    2 | Holiday Inn Express Baltimore-Bwi Airport West
+ AVweDZahByjofQCxu3Oh |    7 | San Francisco Marriott Marquis
+ AWE7OfxKIxWefVJwyIce |    2 | Ramada BWI Airport/Arundel Mills
+ AVwcp3RrkufWRAb5xkVr |    7 | King George Hotel
+ AVwc17-JByjofQCxiydp |    3 | Residence Inn Portland North / Vancouver
+ AVwcmxTz_7pvs4fzw-Ld |    6 | Jameson Inn - Perry
+ AVwdvAQP_7pvs4fz8xub |    4 | Hampton Inn Suites Kansas City-Country Club Plaza
+ AVwd7KfcByjofQCxttOJ |    4 | Comfort Suites Kansas City-Liberty
+ AVwdtGOAByjofQCxrvBc |    4 | Sheraton Kansas City Hotel at Crown Center
+ AVwdj_8FIN2L1WUfxCf1 |    6 | Days Inn Perry Near Fairgrounds
+ AVwc1O06_7pvs4fzzbzB |    2 | Six South St Hotel
+(25 rows)
+
+
+postgres=# SELECT * FROM Users WHERE userID < 10;
+ userid | city |         name
+--------+------+----------------------
+      1 |      | Paula
+      2 |      | D
+      3 |      | Ron
+      4 |  475 | jaeem2016
+      5 |      | MamaNiaOne
+      6 |      | kevan777
+      7 |      | Princess F
+      8 |      | DebMurphy57
+      9 |   14 | kayleighwillswim1224
+(9 rows)
+
+
+postgres=# SELECT * FROM Reviews WHERE reviewID < 2;
+ reviewid |       hotelid        |    date    | rating |
+ text                                                                                    |              title              | userid
+----------+----------------------+------------+--------+----------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------+---------------------------------+--------
+        1 | AVwc252WIN2L1WUfpqLP | 2013-11-14 |      5 | Our experience at Rancho Valencia was absolutely perfect from beginning to end!!!
+! We felt special and very happy during our stayed. I would come back in a heart beat!!! | Best romantic vacation ever!!!! |      1
+(1 row)
+
+
+postgres=# SELECT * FROM Categories WHERE hotelID = 'AVwc252WIN2L1WUfpqLP'
+postgres-# ;
+       hotelid        |           category
+----------------------+------------------------------
+ AVwc252WIN2L1WUfpqLP | Hotels
+ AVwc252WIN2L1WUfpqLP | Hotels and motels
+ AVwc252WIN2L1WUfpqLP | Hotel and motel reservations
+ AVwc252WIN2L1WUfpqLP | Resorts
+ AVwc252WIN2L1WUfpqLP | Resort
+ AVwc252WIN2L1WUfpqLP | Hotel
+(6 rows)
+
+
+postgres=# SELECT * FROM HotelWebsites WHERE hotelID = 'AVwc252WIN2L1WUfpqLP';
+       hotelid        |                       url
+----------------------+-------------------------------------------------
+ AVwc252WIN2L1WUfpqLP | https://www.hotels.com/hotel/125419/reviews%20/
+(1 row)
+
+
