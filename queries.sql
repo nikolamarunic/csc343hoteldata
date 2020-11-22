@@ -38,6 +38,7 @@ ORDER BY numTravellers DESC;
 insert into q1 SELECT * FROM cityinfo;
 
 -- ----------------------------------------------------------------------------------
+-- Query 2
 -- What kinds of factors influence the average rating's that a hotel receives? 
 -- Factors such as city and number of categories fulfilled
 
@@ -87,7 +88,7 @@ HAVING count(rating) > 5;
 -- 4a. Compile all data together 
 -- We manipulated the ORDER BY here as mentioned in the discussion to see
 -- if they perhaps individually affected our result.
-CREATE VIEW result AS
+CREATE VIEW q2result AS
 SELECT hotels.name AS hotel, cities.name as city, avgCityRating, numcategories, rating
 FROM numcategories NATURAL JOIN avgrating
 JOIN hotels ON hotels.hotelID = numcategories.hotelID
@@ -108,7 +109,7 @@ JOIN moreCityRatings ON moreCityRatings.cityID = hotels.city
 ORDER BY city DESC, numcategories DESC
 ;
 
-insert into q2 SELECT * FROM result;
+insert into q2 SELECT * FROM q2result;
 
 -- ----------------------------------------------------------------------------------
 -- Query 3: Do people who tend to travel more (have more reviews posted) 
@@ -139,11 +140,11 @@ FROM reviews
 GROUP BY userID;
 
 -- 3. Join with each other and get name from user
-CREATE VIEW result AS
+CREATE VIEW q3result AS
 SELECT name, numReviews, avgScore
 FROM avgrating NATURAL JOIN numReviews
 JOIN users ON avgrating.userID = users.userID
 ORDER BY numReviews DESC
 ;
 
-insert into q3 SELECT * FROM result;
+insert into q3 SELECT * FROM q3result;

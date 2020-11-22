@@ -1,0 +1,413 @@
+NOTE we do not include the entire result for each query to keep this demo easy to read.
+
+psql (10.14)
+WARNING: Console code page (437) differs from Windows code page (1252)
+         8-bit characters might not work correctly. See psql reference
+         page "Notes for Windows users" for details.
+Type "help" for help.
+
+postgres=# SET ENCODING TO 'utf8';
+ERROR:  unrecognized configuration parameter "encoding"
+postgres=# SET CLIENT_ENCODING TO 'utf8';
+SET
+postgres=# \i schema.ddl
+psql:schema.ddl:3: NOTICE:  drop cascades to 6 other objects
+DETAIL:  drop cascades to table hotelreviews.cities
+drop cascades to table hotelreviews.hotels
+drop cascades to table hotelreviews.users
+drop cascades to table hotelreviews.reviews
+drop cascades to table hotelreviews.categories
+drop cascades to table hotelreviews.hotelwebsites
+DROP SCHEMA
+CREATE SCHEMA
+SET
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+postgres=# \i import_data.sql
+COPY 1021
+COPY 1853
+COPY 6823
+COPY 9854
+COPY 9030
+COPY 2240
+postgres=# ------------- QUERY 1 ---------------
+postgres=# -- Is there a correlation between a city's popularity (in terms of rating) 
+postgres=# -- and the number of travellers that are based in that city?
+postgres=# -- 1. Create view with average rating per city.
+postgres=# CREATE VIEW ratingPerCity AS
+postgres-# SELECT cityID, avg(rating) AS rating
+postgres-# FROM cities JOIN hotels ON (cityID = city)
+postgres-# JOIN reviews ON hotels.hotelID = reviews.hotelID
+postgres-# GROUP BY cityID;
+CREATE VIEW
+postgres=# SELECT * FROM ratingPerCity WHERE cityID < 10;
+ cityid |      rating
+--------+------------------
+      1 |                5
+      2 | 3.58267716535433
+      3 | 4.88888888888889
+      4 | 4.07017543859649
+      5 |                5
+      6 |             3.25
+      7 | 4.35677966101695
+      8 |                1
+      9 | 4.51612903225806
+(9 rows)
+
+
+postgres=# -- 2. Create view with number of travellers ber city
+postgres=# CREATE VIEW travellersPerCity AS
+postgres-# SELECT city, count(*) AS numTravellers
+postgres-# FROM users
+postgres-# WHERE city IS NOT NULL
+postgres-# GROUP BY city;
+CREATE VIEW
+postgres=# SELECT * FROM travellersPerCity WHERE city < 10;
+ city | numtravellers
+------+---------------
+    2 |             3
+    3 |            16
+    4 |            11
+    7 |            22
+    8 |             2
+(5 rows)
+
+
+postgres=# -- 3. Join the views
+postgres=# CREATE VIEW cityinfo AS
+postgres-# SELECT name AS city, numTravellers, rating FROM
+postgres-# travellersPerCity JOIN ratingPerCity ON city = cityID
+postgres-# JOIN cities ON city = cities.cityID
+postgres-# ORDER BY numTravellers DESC;
+CREATE VIEW
+postgres=# SELECT * FROM cityinfo;
+        city        | numtravellers |      rating
+--------------------+---------------+------------------
+ Houston            |            43 |                4
+ Chicago            |            42 | 4.33202247191011
+ Atlanta            |            34 | 4.07792207792208
+ Los Angeles        |            33 | 3.80441176470588
+ Boston             |            31 | 4.27479838709677
+ Phoenix            |            30 | 3.75757575757576
+ Seattle            |            25 | 4.23636363636364
+ Las Vegas          |            25 | 4.16617063492063
+ Philadelphia       |            24 |            4.525
+ Austin             |            24 | 4.66666666666667
+ San Diego          |            24 | 4.16129032258065
+ Dallas             |            23 |              4.6
+ San Francisco      |            22 | 4.35677966101695
+ Portland           |            22 | 4.37933333333333
+ Columbus           |            20 | 4.42222222222222
+ Charlotte          |            18 |          4.65625
+ Orlando            |            18 | 4.03030303030303
+ Pittsburgh         |            17 |            4.125
+ Saint Louis        |            16 | 4.54545454545455
+ Nashville          |            16 | 3.44444444444444
+ Jacksonville       |            16 | 3.68181818181818
+ Denver             |            16 | 4.24137931034483
+ San Antonio        |            16 | 4.26666666666667
+ Vancouver          |            16 | 4.88888888888889
+ Minneapolis        |            15 | 4.42857142857143
+ Charleston         |            14 | 4.41379310344828
+ Cleveland          |            13 |              4.2
+ Baltimore          |            13 | 4.17555555555556
+ Miami              |            13 |                3
+ Springfield        |            13 | 3.72906403940887
+ Richmond           |            12 | 3.26086956521739
+ Detroit            |            12 |              4.5
+ New York           |            12 | 4.37837837837838
+ Colorado Springs   |            12 |                5
+ Lexington          |            12 |           4.1875
+ Kansas City        |            11 | 4.07017543859649
+ Brooklyn           |            11 |              3.5
+ Omaha              |            11 | 4.17647058823529
+ Cincinnati         |            11 | 2.72727272727273
+ Columbia           |            10 | 4.40322580645161
+ Greenville         |            10 | 4.37142857142857
+ Tampa              |            10 | 3.43396226415094
+ Rochester          |            10 | 3.44444444444444
+ Milwaukee          |            10 | 2.46666666666667
+ Madison            |             9 |           4.0625
+ San Jose           |             9 |             3.25
+ Louisville         |             9 | 3.62790697674419
+ Albuquerque        |             9 | 3.90909090909091
+ Raleigh            |             9 |                3
+ Arlington          |             8 | 4.33333333333333
+ Albany             |             8 |                4
+ Tucson             |             8 |                1
+ Washington         |             8 |              2.2
+ Wilmington         |             7 |                4
+ Tulsa              |             7 | 4.09090909090909
+ Fort Lauderdale    |             7 |                4
+ Palm Springs       |             7 |              2.2
+postgres=# -------------- QUERY 2 -----------------------
+postgres=# -- What kinds of factors influence the average rating's that a hotel receives? 
+postgres=# -- Factors such as city and number of categories fulfilled
+postgres=# -- 1. Create view with hotels to num categories
+postgres=# CREATE VIEW numcategories AS
+postgres-# SELECT hotelID, count(*) AS numcategories
+postgres-# FROM categories
+postgres-# GROUP BY hotelID;
+CREATE VIEW
+postgres=# SELECT * FROM numcategories;
+       hotelid        | numcategories
+----------------------+---------------
+ AVwc7uurIN2L1WUfqexC |             4
+ AVwdfQaMkufWRAb56ZBj |             6
+ AVwcnnH9IN2L1WUfnAfW |             7
+ AVwc6hUwkufWRAb50Xu1 |            11
+ AVwcoI15kufWRAb5xSDb |             3
+ AVwcrC6__7pvs4fzxt0Z |             2
+ AVwci4LJIN2L1WUfmI3N |             4
+ AVwdjJDaIN2L1WUfw53Z |             8
+ AVwcxNfT_7pvs4fzyxCU |            13
+ AVwdARF1ByjofQCxkgDX |            18
+ AVwcssTBkufWRAb5yD6M |            11
+ AVwcxVRZkufWRAb5y2BN |             6
+ AV0Z9NhT-gnIPe8DVrWO |             6
+ AVwdBTWVIN2L1WUfrYF3 |             6
+ AVwdLbCR_7pvs4fz3E_E |             6
+ AVwdpmKskufWRAb57-Mw |             6
+postgres=# -- 2. Create view hotel to avg rating
+postgres=# CREATE VIEW avgrating AS
+postgres-# SELECT hotelID, avg(rating) AS rating
+postgres-# FROM reviews
+postgres-# GROUP BY hotelID;
+CREATE VIEW
+postgres=# SELECT * FROM avgrating;
+       hotelid        |      rating
+----------------------+------------------
+ AVwc7uurIN2L1WUfqexC | 3.81818181818182
+ AVwc6hUwkufWRAb50Xu1 |              3.5
+ AVwdStur_7pvs4fz4Vw4 |                4
+ AVwcoI15kufWRAb5xSDb | 2.71428571428571
+ AVwcrC6__7pvs4fzxt0Z |            3.625
+ AVwci4LJIN2L1WUfmI3N |                5
+ AVwdARF1ByjofQCxkgDX |                5
+ AVwcxVRZkufWRAb5y2BN |                4
+ AV0Z9NhT-gnIPe8DVrWO |                5
+ AVwdLbCR_7pvs4fz3E_E |                3
+ AVwdpmKskufWRAb57-Mw |                5
+postgres=# -- 3a. Create view to capture avg hotel rating per city
+postgres=# CREATE VIEW cityratings as
+postgres-# SELECT city AS cityID, avg(rating) as avgCityRating
+postgres-# FROM reviews NATURAL JOIN hotels
+postgres-# GROUP BY city;
+CREATE VIEW
+postgres=# SELECT * FROM cityratings WHERE cityID < 10;
+ cityid |  avgcityrating
+--------+------------------
+      1 |                5
+      2 | 3.58267716535433
+      3 | 4.88888888888889
+      4 | 4.07017543859649
+      5 |                5
+      6 |             3.25
+      7 | 4.35677966101695
+      8 |                1
+      9 | 4.51612903225806
+(9 rows)
+
+
+postgres=# -- 3b. Create a view to see if there is perhaps a trend with cities that have more ratings
+postgres=# CREATE VIEW moreCityRatings as
+postgres-# SELECT city AS cityID, avg(rating) as avgCityRating
+postgres-# FROM reviews NATURAL JOIN hotels
+postgres-# GROUP BY city
+postgres-# HAVING count(rating) > 5;
+CREATE VIEW
+postgres=# SELECT * FROM moreCityRatings WHERE cityID < 10;
+ cityid |  avgcityrating
+--------+------------------
+      2 | 3.58267716535433
+      3 | 4.88888888888889
+      4 | 4.07017543859649
+      7 | 4.35677966101695
+      9 | 4.51612903225806
+(5 rows)
+
+
+postgres=# -- 4a. Compile all data together
+postgres=# -- We manipulated the ORDER BY here as mentioned in the discussion to see
+postgres=# -- if they perhaps individually affected our result.
+postgres=# CREATE VIEW q2result AS
+postgres-# SELECT hotels.name AS hotel, cities.name as city, avgCityRating, numcategories, rating
+postgres-# FROM numcategories NATURAL JOIN avgrating
+postgres-# JOIN hotels ON hotels.hotelID = numcategories.hotelID
+postgres-# JOIN cities ON cities.cityID = hotels.city
+postgres-# JOIN cityratings ON cityratings.cityID = hotels.city
+postgres-# ORDER BY city DESC, numcategories DESC
+postgres-# ;
+CREATE VIEW
+postgres=# SELECT * FROM q2result;
+                                hotel                                 |        city         |  avgcityrating   | numcategories |      rating
+----------------------------------------------------------------------+---------------------+------------------+---------------+------------------
+ Arizona Inn Suites                                                   | Yuma                |             4.25 |             6 |                5
+ Hilton Garden Inn Yuma Pivot Point                                   | Yuma                |             4.25 |             6 |                4
+ Best Western Yuba City Inn                                           | Yuba City           |                3 |            11 |                3
+ Bardessono                                                           | Yountville          |                5 |             9 |                5
+ Red Roof Inn Boardman                                                | Youngstown          |                5 |             6 |                5
+ Motel 6 York North                                                   | York                |                2 |             5 |                2
+ Mills Park Hotel                                                     | Yellow Springs      |                5 |             6 |                5
+ Yakutat Lodge                                                        | Yakutat             |                5 |             6 |                5
+ Fireside Motel                                                       | Yachats             |              4.6 |             7 |              4.6
+ Days Inn - Wytheville                                                | Wytheville          | 3.83333333333333 |            14 | 3.66666666666667
+ Super 8-wytheville                                                   | Wytheville          | 3.83333333333333 |             7 |                3
+ Budget Host Inn                                                      | Wytheville          | 3.83333333333333 |             6 |              3.8
+ Best Western-woodstock Inn                                           | Woodstock           | 4.66666666666667 |             7 |              4.5
+ Hampton Inn & Suites Woodstock Va                                    | Woodstock           | 4.66666666666667 |             2 |                5
+ Hampton Inn Potomac Mills/Woodbridge                                 | Woodbridge          |              4.2 |             8 |              4.2
+ Courtyard Boston Woburn/Boston North                                 | Woburn              | 4.36363636363636 |             2 | 4.36363636363636
+ Indian Trail Motel                                                   | Wisconsin Dells     | 4.30555555555556 |             8 |                5
+ Wilderness On The Lake                                               | Wisconsin Dells     | 4.30555555555556 |             7 |              3.5
+ Best Western Ambassador Inn & Suites                                 | Wisconsin Dells     | 4.30555555555556 |             6 | 4.36363636363636
+ Baker's Sunset Bay Resort                                            | Wisconsin Dells     | 4.30555555555556 |             5 | 4.46666666666667
+ Alakai Hotel & Suites                                                | Wisconsin Dells     | 4.30555555555556 |             5 |                5
+ Trails End Motel                                                     | Wisconsin Dells     | 4.30555555555556 |             5 |                4
+ Top Hat Motel                                                        | Wisconsin Dells     | 4.30555555555556 |             4 |                4
+ Deer Trail Motel                                                     | Wisconsin Dells     | 4.30555555555556 |             4 |                5
+postgres=# -- 4b. Compile all data together, now checking for cities with many reviews
+postgres=# -- We manipulated the ORDER BY here as mentioned in the discussion to see
+postgres=# -- if they perhaps individually affected our result.
+postgres=# CREATE VIEW moreReviewsResult AS
+postgres-# SELECT hotels.name AS hotel, cities.name as city, avgCityRating, numcategories, rating
+postgres-# FROM numcategories NATURAL JOIN avgrating
+postgres-# JOIN hotels ON hotels.hotelID = numcategories.hotelID
+postgres-# JOIN cities ON cities.cityID = hotels.city
+postgres-# JOIN moreCityRatings ON moreCityRatings.cityID = hotels.city
+postgres-# ORDER BY city DESC, numcategories DESC
+postgres-# ;
+CREATE VIEW
+postgres=# SELECT * FROM moreReviewsResult;
+                                hotel                                 |        city         |  avgcityrating   | numcategories |      rating
+----------------------------------------------------------------------+---------------------+------------------+---------------+------------------
+ Red Roof Inn Boardman                                                | Youngstown          |                5 |             6 |                5
+ Days Inn - Wytheville                                                | Wytheville          | 3.83333333333333 |            14 | 3.66666666666667
+ Super 8-wytheville                                                   | Wytheville          | 3.83333333333333 |             7 |                3
+ Budget Host Inn                                                      | Wytheville          | 3.83333333333333 |             6 |              3.8
+ Best Western-woodstock Inn                                           | Woodstock           | 4.66666666666667 |             7 |              4.5
+ Hampton Inn & Suites Woodstock Va                                    | Woodstock           | 4.66666666666667 |             2 |                5
+ Courtyard Boston Woburn/Boston North                                 | Woburn              | 4.36363636363636 |             2 | 4.36363636363636
+ Indian Trail Motel                                                   | Wisconsin Dells     | 4.30555555555556 |             8 |                5
+ Wilderness On The Lake                                               | Wisconsin Dells     | 4.30555555555556 |             7 |              3.5
+ Best Western Ambassador Inn & Suites                                 | Wisconsin Dells     | 4.30555555555556 |             6 | 4.36363636363636
+ Baker's Sunset Bay Resort                                            | Wisconsin Dells     | 4.30555555555556 |             5 | 4.46666666666667
+ Alakai Hotel & Suites                                                | Wisconsin Dells     | 4.30555555555556 |             5 |                5
+ Trails End Motel                                                     | Wisconsin Dells     | 4.30555555555556 |             5 |                4
+ Top Hat Motel                                                        | Wisconsin Dells     | 4.30555555555556 |             4 |                4
+ Deer Trail Motel                                                     | Wisconsin Dells     | 4.30555555555556 |             4 |                5
+ Diamond Hotel                                                        | Wisconsin Dells     | 4.30555555555556 |             2 |                1
+ Hampton Inn and Suites Williamsburg-Central                          | Williamsburg        |          4.23875 |             2 | 4.20227272727273
+ Bluegreen Parkside Williamsburg, Ascend Resort Collection            | Williamsburg        |          4.23875 |             2 |              4.8
+ Bluegreen Vacations Patrick Henry Sqr, Ascend Resort Collection      | Williamsburg        |          4.23875 |             2 | 4.52142857142857
+ Hilton Garden Inn Williamsburg                                       | Williamsburg        |          4.23875 |             2 |            4.065
+postgres=# ----------- Query 3 -----------
+postgres=# -- Do people who tend to travel more (have more reviews posted) 
+postgres=# -- tend to give a higher/lower score
+postgres=# -- 1. Create view with user to hum reviews
+postgres=# CREATE VIEW numReviews AS
+postgres-# SELECT userID, count(*) AS numReviews
+postgres-# FROM reviews
+postgres-# GROUP BY userID;
+CREATE VIEW
+postgres=# SELECT * FROM numReviews;
+ userid | numreviews
+--------+------------
+   6114 |          1
+   1489 |          1
+   4790 |          1
+    273 |          8
+   3936 |          1
+   2574 |          1
+    951 |          1
+   5761 |          1
+   5843 |          1
+   5729 |          1
+   5468 |          1
+postgres=# DROP VIEW avgrating CASCADE;
+NOTICE:  drop cascades to 2 other objects
+DETAIL:  drop cascades to view q2result
+drop cascades to view morereviewsresult
+DROP VIEW
+postgres=# -- 2. Create view user to average score
+postgres=# CREATE VIEW avgrating AS
+postgres-# SELECT userID, avg(rating) AS avgScore
+postgres-# FROM reviews
+postgres-# GROUP BY userID;
+CREATE VIEW
+postgres=# SELECT * FROM avgrating;
+ userid |     avgscore
+--------+------------------
+   6114 |                4
+   1489 |                5
+   4790 |                5
+    273 |          3.71875
+   3936 |                3
+   2574 |                2
+    951 |                5
+   5761 |                4
+   5843 |                1
+   5729 |                3
+   5468 |                5
+   5259 |                1
+postgres=# -- 3. Join with each other and get name from user
+postgres=# CREATE VIEW q3result AS
+postgres-# SELECT name, numReviews, avgScore
+postgres-# FROM avgrating NATURAL JOIN numReviews
+postgres-# JOIN users ON avgrating.userID = users.userID
+postgres-# ORDER BY numReviews DESC
+postgres-# ;
+CREATE VIEW
+postgres=# SELECT * FROM q3result;
+             name              | numreviews |     avgscore
+-------------------------------+------------+------------------
+ A verified traveler           |       1158 | 3.88341968911917
+ A Traveler                    |        390 | 3.55641025641026
+ Anonymous                     |        164 | 4.16371951219512
+ John                          |         37 | 3.98918918918919
+ David                         |         35 | 3.87714285714286
+ Robert                        |         33 | 4.02727272727273
+ Michael                       |         32 |        4.0203125
+ Mary                          |         17 | 4.26764705882353
+ Christine                     |         16 |         4.034375
+ Lisa                          |         15 | 4.20666666666667
+ Richard                       |         14 | 4.01785714285714
+ Mark                          |         14 | 3.97857142857143
+ Paul                          |         13 | 4.22307692307692
+ James                         |         12 | 4.27083333333333
+ Sharon                        |         11 | 3.85909090909091
+ Joseph                        |         11 | 4.01363636363636
+ Susan                         |         10 |             3.39
+ Charles                       |         10 |             3.82
+ Maria                         |         10 |            4.545
+
+-- EDITED FOR BREVITY
+
+ great276                      |          1 |                5
+ ElizabethHigdon1963           |          1 |                5
+ Prem D                        |          1 |                4
+ Steven H.                     |          1 |                2
+ diannek                       |          1 |                3
+ Milagros S                    |          1 |                5
+ George E. B                   |          1 |                5
+ lisamG2206KD                  |          1 |                4
+ LowieSantiago_Chile           |          1 |                3
+ family_guy_98101              |          1 |                4
+ Sarah_Cervantes               |          1 |                5
+ Abigail T                     |          1 |                5
+ westcoast74                   |          1 |                5
+ Laura2373                     |          1 |                5
+ Steve60097                    |          1 |                5
+ playridebikehike              |          1 |                5
+ Angelique                     |          1 |                5
+ Jeanie W                      |          1 |                5
+ DeeJayBee727                  |          1 |                5
+ gqkz                          |          1 |                4
+ Donna N                       |          1 |                5
+ Kathryn R                     |          1 |                5
+ Larry S                       |          1 |                5
+postgres=# 
